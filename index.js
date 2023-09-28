@@ -25,12 +25,12 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
-    const menusCollection = await client.db('bistroDataBase').collection('menu')
+    const menuCollection = await client.db('bistroDataBase').collection('menu')
     const reviewsCollection = await client.db('bistroDataBase').collection('reviews')
     
     // get all the menus
     app.get('/menus', async (req, res) => {
-        const query = await menusCollection.find().toArray()
+        const query = await menuCollection.find().toArray()
         res.send(query)
     })
     
