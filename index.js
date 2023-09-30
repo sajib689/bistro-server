@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 require('dotenv').config()
 const cors = require('cors');
@@ -28,6 +28,7 @@ async function run() {
     const menuCollection = await client.db('bistroDataBase').collection('menu')
     const reviewsCollection = await client.db('bistroDataBase').collection('reviews')
     const cartsCollection = await client.db('bistroDataBase').collection('carts')
+    const usersCollection = await client.db('bistroDataBase').collection('users')
     
     // get all the menus
     app.get('/menus', async (req, res) => {
@@ -44,6 +45,30 @@ async function run() {
     app.post('/carts', async(req, res) => {
       const item = req.body
       const result = await cartsCollection.insertOne(item)
+      res.send(result)
+    })
+    // get all data from carts
+    app.get('/carts', async(req, res) => {
+      let query = {}
+      if(req.query?.email) {
+         query = {email: req.query.email}
+      }
+      const result = await cartsCollection.find(query).toArray()
+      res.send(result)
+    });
+    // delete carts products by id
+    app.delete('/carts/:id', async (req, res) => {
+      const id = req.params.id 
+      const query = {_id: new ObjectId(id)}
+      const result = await cartsCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
+    // user related apis
+    app.post('/users', async (req, res) => {
+      const user = req.body
+      const result = await usersCollection.insertOne(user)
       res.send(result)
     })
     // Send a ping to confirm a successful connection
