@@ -68,9 +68,26 @@ async function run() {
     // user related apis
     app.post('/users', async (req, res) => {
       const user = req.body
+      const query = {email: user.email}
+      const existingUser = await usersCollection.findOne(query)
+      if(existingUser) {
+        return res.send({message: 'User already exists'})
+      }
       const result = await usersCollection.insertOne(user)
       res.send(result)
     })
+    // get all users from database 
+    app.get('/users', async(req, res) => {
+      const result = await usersCollection.find().toArray()
+      res.send(result)
+    })
+    // delete user from database
+    app.delete('/users/:id', async(req, res) => {
+      const id = req.params.id 
+      const query = {_id: new ObjectId(id)}
+      const result = await usersCollection.deleteOne(query)
+      res.send(result)
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
