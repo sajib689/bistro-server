@@ -66,12 +66,11 @@ async function run() {
     });
     // get all data from carts
     app.get("/carts", verifyJWT, async (req, res) => {
-      const email = req.body.email;
+      const email = req.query.email;
       if (!email) {
         return res.send([]);
       }
-
-      const decodedEmail = req.decoded.email;
+     const decodedEmail = req.decoded.email;
       const query = { email: email };
       if (email !== decodedEmail) {
         return res.status(403).send({ error: true, message: "Invalid" });
@@ -124,6 +123,17 @@ async function run() {
       const result = await usersCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+    // get admin
+    app.get('/users/admin/:email',verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      if(req.decoded.email !== email) {
+        res.send({admin: false});
+      }
+      const query = {email: email};
+      const user = await usersCollection.findOne(query);
+      const result = { admin: user?.role === 'admin'}
+      res.send(result);
+    })
     // secret opration using by jwt token
     app.post("/jwt", (req, res) => {
       const users = req.body;
