@@ -9,7 +9,20 @@ app.use(express.json());
 app.use(cors());
 
 
-
+const verifyJWT = (req, res, next) => {
+  const authorization = req.headers.authorization
+  if(!authorization) {
+    res.status(401).send({error: true, message: 'Unauthorized access'})
+  }
+  const token = authorization.split(' ')[1]
+  jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+    if (err) {
+      res.status(402).send({error: true, message: 'Unauthorized access'})
+    }
+    req.decoded = decoded
+    next()
+  })
+}
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.2m0rny5.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -67,7 +80,7 @@ async function run() {
 
 
     // user related apis
-    app.post('/users', async (req, res) => {
+    app.post('/users',verifyJWT, async (req, res) => {
       const user = req.body
       const query = {email: user.email}
       const existingUser = await usersCollection.findOne(query)
