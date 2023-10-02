@@ -1,6 +1,7 @@
 const express = require('express');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
+const jwt = require('jsonwebtoken');
 require('dotenv').config()
 const cors = require('cors');
 const port = process.env.PORT || 3000
@@ -100,6 +101,14 @@ async function run() {
       }
       const result = await usersCollection.updateOne(filter, updateDoc)
       res.send(result)
+    })
+    // secret opration using by jwt token
+    app.post('/jwt', (req, res) => {
+      const users = req.body 
+      const token = jwt.sign(users, process.env.JWT_KEY, {
+        expiresIn: '1h'
+      })
+      res.send({ token})
     })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
