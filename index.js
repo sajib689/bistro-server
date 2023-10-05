@@ -11,12 +11,16 @@ app.use(cors());
 const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
   if (!authorization) {
-   return res.status(401).send({ error: true, message: "Unauthorized access" });
+    return res
+      .status(401)
+      .send({ error: true, message: "Unauthorized access" });
   }
   const token = authorization.split(" ")[1];
   jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
     if (err) {
-     return res.status(402).send({ error: true, message: "Unauthorized access" });
+      return res
+        .status(402)
+        .send({ error: true, message: "Unauthorized access" });
     }
     req.decoded = decoded;
     next();
@@ -70,7 +74,7 @@ async function run() {
       if (!email) {
         return res.send([]);
       }
-     const decodedEmail = req.decoded.email;
+      const decodedEmail = req.decoded.email;
       const query = { email: email };
       if (email !== decodedEmail) {
         return res.status(403).send({ error: true, message: "Invalid" });
@@ -99,8 +103,7 @@ async function run() {
       res.send(result);
     });
     // get all users from database
-    app.get("/users",verifyJWT, async (req, res) => {
-    
+    app.get("/users", verifyJWT, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
@@ -125,16 +128,16 @@ async function run() {
       res.send(result);
     });
     // get admin
-    app.get('/users/admin/:email',verifyJWT, async (req, res) => {
+    app.get("/users/admin/:email", verifyJWT, async (req, res) => {
       const email = req.params.email;
-      if(req.decoded.email !== email) {
-        res.send({admin: false});
+      if (req.decoded.email !== email) {
+        res.send({ admin: false });
       }
-      const query = {email: email};
+      const query = { email: email };
       const user = await usersCollection.findOne(query);
-      const result = { admin: user?.role === 'admin'}
+      const result = { admin: user?.role === "admin" };
       res.send(result);
-    })
+    });
     // secret opration using by jwt token
     app.post("/jwt", (req, res) => {
       const users = req.body;
@@ -143,6 +146,18 @@ async function run() {
       });
       res.send({ token });
     });
+    // verifyAdmin
+    const verifyAdmin = async (res, req, next) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      if (user?.role !== "admin") {
+        return res
+          .status(403)
+          .send({ error: true, message: "forbidden message" });
+      }
+      next();
+    };
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
